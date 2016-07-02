@@ -45,8 +45,7 @@
     };
     var partialData = {};
     partialData.labels = data.labels;
-    partialData.datasets = data.datasets;
-    //partialData.datasets[0].data = partialData.datasets[0].data.slice(-30);
+    partialData.datasets = JSON.parse(JSON.stringify(data.datasets));
     partialData.datasets[0].label = "Latest visits per day";
     partialData.labels = partialData.labels.slice(-30);
 
