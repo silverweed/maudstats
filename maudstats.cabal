@@ -21,7 +21,7 @@ executable maudstats
   -- other-modules:       
   -- other-extensions:    
   build-depends:       
-        base >=4.9 && <4.10,
+        base,
         unix-time,
         mongoDB,
         text,
