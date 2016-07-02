@@ -20,3 +20,4 @@ cabal.project.local
 maudstats
 *.swp
 main
+frontend/data.js

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title>/cr/ stats</title>
+        <script src="//Chart.js"></script>
+    </head>
+    <body>
+        <canvas id="uniqueVisitsPerDay" width=1200 height=400>
+            Your browser does not support HTML5.
+        </canvas>
+        <script src="//data.js"></script>
+        <script>
+(function () {
+    'use strict';
+    var ctx = document.getElementById('uniqueVisitsPerDay').getContext('2d');
+    var data = {
+        labels: ext.labels,
+        datasets: [
+            {
+                label: "Unique visits per day",
+                fill: false,
+                lineTension: 0.1,
+                backgroundColor: "rgba(75,192,192,0.4)",
+                borderColor: "rgba(75,192,192,1)",
+                borderCapStyle: 'butt',
+                borderDash: [],
+                borderDashOffset: 0.0,
+                borderJoinStyle: 'miter',
+                pointBorderColor: "rgba(75,192,192,1)",
+                pointBackgroundColor: "#fff",
+                pointBorderWidth: 1,
+                pointHoverRadius: 5,
+                pointHoverBackgroundColor: "rgba(75,192,192,1)",
+                pointHoverBorderColor: "rgba(220,220,220,1)",
+                pointHoverBorderWidth: 2,
+                pointRadius: 1,
+                pointHitRadius: 10,
+                data: ext.data,
+            }
+        ]
+    };
+    var uniqueVisitsPerDay = new Chart(ctx, {
+        type: 'line',
+        data: data,
+        options: {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero:true
+                    }
+                }]
+            }
+        }
+    });
+})();
+        </script>
+        <noscript>
+            Please enable Javascript to view this page.
+        </noscript>
+    </body>
+</html>
