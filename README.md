@@ -1,5 +1,5 @@
 # maudstats
-This program fetches statistics from [maud](https://github.com/hamcha/maud)'s database and displays them in an HTML page using [Chart.js](https://github.com/chartjs/chartjs).
+This program fetches statistics from [maud](https://github.com/hamcha/maud)'s database and displays them in an HTML page using [Chart.js](https://github.com/chartjs/Chart.js).
 
 ### Howto
 
