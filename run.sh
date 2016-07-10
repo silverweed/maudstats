@@ -29,8 +29,8 @@ END {
 	printf "\"use strict\";\r\nvar ext = {\r\n\tlabels: ["
 	for (j = 1; j < i - 1; ++j) 
 		printf "\""labels[j]"\", "
-	printf labels[i-1]"],\r\n\tdata: ["
+	printf "\""labels[i]"\"],\r\n\tdata: ["
 	for (j = 1; j < i - 1; ++j)
 		printf data[j]", "
-	printf data[i-1]"]\r\n};"
+	printf data[i]"]\r\n};"
 }'

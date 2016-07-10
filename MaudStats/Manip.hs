@@ -24,7 +24,7 @@ groupVisits pairs = map pairWithDay $ groupBy isSameDay pairs
  - Like groupVisits, but uniques IPs and returns but a [(day, [ip])]
  -}
 groupVisitsUniq :: [IPPair] -> [(DateTime, [String])]
-groupVisitsUniq pairs = map getIps $ groupVisits pairs
+groupVisitsUniq = map getIps . groupVisits 
                         where
                         getIps :: (DateTime, [IPPair]) -> (DateTime, [String])
                         getIps (date, prs) = (date, nub $ map snd prs)
