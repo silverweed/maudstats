@@ -18,7 +18,7 @@ EXE="$ROOT/dist/build/maudstats/maudstats"
 		exit 3
 	}
 }
-$EXE | awk > $ROOT/frontend/data.js '
+$EXE | awk -v 'FS=|' > $ROOT/frontend/data.js '
 {
 	++i
 	labels[i] = $1

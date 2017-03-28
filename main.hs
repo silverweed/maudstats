@@ -12,7 +12,7 @@ data Conf = Conf { dbUrl    :: String
                  , diffTime :: Int
                  }
 
-conf = Conf { dbUrl    = "localhost"
+conf = Conf { dbUrl    = "database.jail"
             , dbName   = "maud"
             , diffTime = 24
             }
