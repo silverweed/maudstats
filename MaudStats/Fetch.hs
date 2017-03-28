@@ -2,8 +2,6 @@
 module MaudStats.Fetch 
 ( pairIps
 , allIps
-, isSameDay
-, getDay
 ) where
 
 import Database.MongoDB
@@ -34,9 +32,3 @@ allIps docs = nub $ map extractIp $ docs
               extractIp doc = case doc !? "author.ip" of
                               Just v  -> v
                               Nothing -> ""
-
-getDay :: DateType -> DateTime
-getDay = fromSeconds . fromIntegral
-              
-isSameDay :: IPPair -> IPPair -> Bool
-isSameDay (a, _) (b, _) = abs (a - b) < 86400

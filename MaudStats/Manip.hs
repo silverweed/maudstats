@@ -1,9 +1,11 @@
 module MaudStats.Manip
-( groupVisits
+( getDay
+, groupVisits
 , groupVisitsUniq
+, isSameDay
 ) where
 
-import Data.DateTime (DateTime)
+import Data.DateTime (DateTime, fromSeconds)
 import Data.List     (groupBy, nub)
 import MaudStats.Types
 import MaudStats.Fetch
@@ -24,8 +26,13 @@ groupVisits pairs = map pairWithDay $ groupBy isSameDay pairs
  - Like groupVisits, but uniques IPs and returns but a [(day, [ip])]
  -}
 groupVisitsUniq :: [IPPair] -> [(DateTime, [String])]
-groupVisitsUniq = map getIps . groupVisits 
+groupVisitsUniq = map getIps . groupVisits
                         where
                         getIps :: (DateTime, [IPPair]) -> (DateTime, [String])
                         getIps (date, prs) = (date, nub $ map snd prs)
 
+isSameDay :: IPPair -> IPPair -> Bool
+isSameDay (a, _) (b, _) = abs (a - b) < 86400
+
+getDay :: DateType -> DateTime
+getDay = fromSeconds . fromIntegral

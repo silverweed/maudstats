@@ -5,24 +5,32 @@ import Database.MongoDB
 import MaudStats.Fetch
 import MaudStats.Display
 import MaudStats.Manip
-import Data.Text hiding (find)
+import MaudStats.ReadLog
+import Data.DateTime (toSeconds)
+import Data.List (map)
+import Data.Text hiding (find, map)
 
 data Conf = Conf { dbUrl    :: String
                  , dbName   :: Database
                  , diffTime :: Int
+                 , logFile  :: String
                  }
 
-conf = Conf { dbUrl    = "database.jail"
+conf = Conf { dbUrl    = "localhost"
             , dbName   = "maud"
             , diffTime = 24
+            , logFile  = "nginx-access.log"
             }
 
-main = fetchStatsAndRun printNum
+main :: IO ()
+{-main = fetchStatsAndRun printNum-}
+main = do readLogFile (logFile conf) >>= printNum . groupVisitsUniq . map (\(d, i) -> (fromIntegral $ toSeconds d, i)) 
+{-main = readLogFile (logFile conf) >>= printAll-}
 
 run pipe = access pipe ReadStaleOk (dbName conf)
 
 fetchStatsAndRun action = do pipe <- connect (host $ dbUrl conf)
-                             e <- run pipe postsWithIp 
+                             e <- run pipe postsWithIp
                              close pipe
                              let pairs = pairIps e
                              let visits = groupVisitsUniq pairs
@@ -33,7 +41,7 @@ fetchStatsAndRun action = do pipe <- connect (host $ dbUrl conf)
 {-|
  - postsWithIp returns all the posts with an associated IP, sorted by date.
  -}
-postsWithIp = find (select ["author.ip" =: ["$exists" =: True]] "posts") 
+postsWithIp = find (select ["author.ip" =: ["$exists" =: True]] "posts")
                 { project = ["_id" =: 0, "author.ip" =: 1, "date" =: 1]
                 , sort    = ["date" =: 1]
                 } >>= rest
