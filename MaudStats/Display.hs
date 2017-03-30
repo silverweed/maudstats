@@ -4,11 +4,10 @@ module MaudStats.Display
 , printNum
 ) where
 
-import Data.DateTime      (DateTime, formatDateTime, fromGregorian', fromSeconds, toGregorian')
-import Data.List          (intercalate)
-import Data.Time.Calendar (Day, addDays, diffDays, fromGregorian, toGregorian)
-import Data.UnixTime      (diffUnixTime, fromEpochTime, secondsToUnixDiffTime, udtSeconds)
-import MaudStats.Manip    (GroupedIPs)
+import Data.DateTime
+import Data.List       (intercalate)
+import Data.UnixTime   (diffUnixTime, fromEpochTime, secondsToUnixDiffTime, udtSeconds)
+import MaudStats.Manip (GroupedIPs, allDaysBetween, fillMissing)
 
 sep = "|"
 
@@ -50,21 +49,16 @@ emitData visiting posting =
         , "    labels: ["
         , "        " ++ generateLabels visiting
         , "    ],"
-        , "    visits: " ++ show visiting --(show $ map (length . snd) visiting)
-        , "    ,"
+        , "    visits: " ++ (show $ map (length . snd) $ fillMissing visiting) ++ ","
+        , "    posts: " ++ (show $ map (length . snd) $ fillMissing posting)
         , "};"
         ]
         where
         -- Generate all days from first to last
         generateLabels :: GroupedIPs -> String
         generateLabels pairs = intercalate ","
-                                       $ map (show . readableDate . day2datetime)
-                                       $ start : [addDays i start | i <- [1..diff]]
+                                       $ map (show . readableDate)
+                                       $ allDaysBetween start end
                                where
-                               -- FIXME: use Data.DateTime.addSeconds instead of Calendar.addDays
-                               datetime2day :: DateTime -> Day
-                               datetime2day dt = let (y, m, d) = toGregorian' dt in fromGregorian y m d
-                               day2datetime :: Day -> DateTime
-                               day2datetime day = let (y, m, d) = toGregorian day in fromGregorian' y m d
-                               start = datetime2day $ fst $ head pairs
-                               diff  = diffDays (datetime2day $ fst $ last pairs) start
+                               start = fst $ head pairs
+                               end   = fst $ last pairs

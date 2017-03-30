@@ -12,42 +12,36 @@ import MaudStats.ReadLog
 
 data Conf = Conf { dbUrl    :: String
                  , dbName   :: Database
-                 , diffTime :: Int
                  , logFile  :: String
                  }
 
 conf = Conf { dbUrl    = "localhost"
             , dbName   = "maud"
-            , diffTime = 24
             , logFile  = "nginx-access.log"
             }
 
 main :: IO ()
-{-main = fetchStatsAndRun printNum-}
-main = do visits <- readLogFile (logFile conf)
-          print $ groupIPPairs visits
-          {-let uniqvisits = groupIPPairsUniq visits-}
-          {-posts <- fetchPosts $ host $ dbUrl conf-}
-          {-let uniqposts = groupIPPairsUniq posts-}
-          {-putStrLn $ emitData uniqvisits uniqposts-}
-{-main = readLogFile (logFile conf) >>= printAll-}
+main = do visits <- readLogFile $ logFile conf
+          posts  <- fetchPosts $ host $ dbUrl conf
+          let uniqvisits = groupIPPairsUniq visits
+          let uniqposts  = groupIPPairsUniq posts
+          putStrLn $ emitData uniqvisits uniqposts
 
-run pipe = access pipe ReadStaleOk (dbName conf)
+run pipe = access pipe ReadStaleOk $ dbName conf
 
-fetchPosts :: Host -> IO [IPPair] -- -> IO [(DateTime, [String])]
+fetchPosts :: Host -> IO [IPPair]
 fetchPosts dbUrl = do pipe <- connect dbUrl
-                      e <- run pipe postsWithIp
+                      e    <- run pipe postsWithIp
                       close pipe
                       let pairs = pairIps e
                       return pairs
-                      {-return $ groupIPPairsUniq pairs-}
 
-fetchStatsAndRun action = do pipe <- connect (host $ dbUrl conf)
-                             e <- run pipe postsWithIp
-                             close pipe
-                             let pairs = pairIps e
-                             let visits = groupIPPairsUniq pairs
-                             action visits
+{-fetchStatsAndRun action = do pipe <- connect (host $ dbUrl conf)-}
+                             {-e <- run pipe postsWithIp-}
+                             {-close pipe-}
+                             {-let pairs = pairIps e-}
+                             {-let visits = groupIPPairsUniq pairs-}
+                             {-action visits-}
 
 -- FIXME: this ought to stay in Fetch, but compiler cannot resolve ambiguity
 -- (and neither can we :/)
