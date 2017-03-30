@@ -1,14 +1,14 @@
 {-# LANGUAGE OverloadedStrings, ExtendedDefaultRules #-}
 module Main where
 
+import Data.DateTime (toSeconds)
+import Data.List (map)
+import Data.Text hiding (find, map)
 import Database.MongoDB
 import MaudStats.Fetch
 import MaudStats.Display
 import MaudStats.Manip
 import MaudStats.ReadLog
-import Data.DateTime (toSeconds)
-import Data.List (map)
-import Data.Text hiding (find, map)
 
 data Conf = Conf { dbUrl    :: String
                  , dbName   :: Database
@@ -24,7 +24,7 @@ conf = Conf { dbUrl    = "localhost"
 
 main :: IO ()
 {-main = fetchStatsAndRun printNum-}
-main = do readLogFile (logFile conf) >>= printNum . groupVisitsUniq . map (\(d, i) -> (fromIntegral $ toSeconds d, i)) 
+main = do readLogFile (logFile conf) >>= printNum . groupVisitsUniq
 {-main = readLogFile (logFile conf) >>= printAll-}
 
 run pipe = access pipe ReadStaleOk (dbName conf)

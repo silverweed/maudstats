@@ -1,38 +1,28 @@
 module MaudStats.Manip
-( getDay
+( IPPair
 , groupVisits
 , groupVisitsUniq
-, isSameDay
+, unix2date
 ) where
 
 import Data.DateTime (DateTime, fromSeconds)
+import Data.Int      (Int64)
 import Data.List     (groupBy, nub)
-import MaudStats.Types
-import MaudStats.Fetch
+import qualified Data.MultiMap as MultiMap
+
+type IPPair = (DateTime, String)
 
 {-|
- - groupVisits takes a list [(date, ip)] and returns a list [(day, [(date, ip)])]
- - with the ips grouped by days.
+ - groupVisits takes the list of pairs (unixtime, ip) and returns a list of pair [(datetime, [ip])].
  -}
-groupVisits :: [IPPair] -> [(DateTime, [IPPair])]
-groupVisits [] = []
-groupVisits pairs = map pairWithDay $ groupBy isSameDay pairs
-                    where
-                    pairWithDay :: [IPPair] -> (DateTime, [IPPair])
-                    pairWithDay [] = error "Empty list given to pairWithDay!"
-                    pairWithDay list = (getDay . fst . head $ list, list)
+groupVisits :: [IPPair] -> [(DateTime, [String])]
+groupVisits = MultiMap.assocs . MultiMap.fromList
 
 {-|
- - Like groupVisits, but uniques IPs and returns but a [(day, [ip])]
+ - groupVisitsUniq is like groupVisits, but uniques ips
  -}
 groupVisitsUniq :: [IPPair] -> [(DateTime, [String])]
-groupVisitsUniq = map getIps . groupVisits
-                        where
-                        getIps :: (DateTime, [IPPair]) -> (DateTime, [String])
-                        getIps (date, prs) = (date, nub $ map snd prs)
+groupVisitsUniq = map (\(f, s) -> (f, nub s)) . groupVisits
 
-isSameDay :: IPPair -> IPPair -> Bool
-isSameDay (a, _) (b, _) = abs (a - b) < 86400
-
-getDay :: DateType -> DateTime
-getDay = fromSeconds . fromIntegral
+unix2date :: Int64 -> DateTime
+unix2date = fromSeconds . fromIntegral

@@ -1,13 +1,13 @@
 {-# LANGUAGE OverloadedStrings, ExtendedDefaultRules #-}
-module MaudStats.Fetch 
+module MaudStats.Fetch
 ( pairIps
 , allIps
 ) where
 
-import Database.MongoDB
 import Data.DateTime
-import MaudStats.Types
 import Data.List (nub)
+import Database.MongoDB
+import MaudStats.Manip (IPPair, unix2date)
 
 {-|
  - pairIps extracts a list of pairs (date, ip) from the documents
@@ -19,7 +19,7 @@ pairIps (doc:docs) | date /= Nothing && ip /= Nothing = let (Just d, Just i) = (
                    | otherwise = pairIps docs
                    where
                    ip   = doc !? "author.ip"
-                   date = doc !? "date"
+                   date = fmap unix2date $ doc !? "date"
 
 
 {-|
