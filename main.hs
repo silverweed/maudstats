@@ -24,16 +24,29 @@ conf = Conf { dbUrl    = "localhost"
 
 main :: IO ()
 {-main = fetchStatsAndRun printNum-}
-main = do readLogFile (logFile conf) >>= printNum . groupVisitsUniq
+main = do visits <- readLogFile (logFile conf)
+          print $ groupIPPairs visits
+          {-let uniqvisits = groupIPPairsUniq visits-}
+          {-posts <- fetchPosts $ host $ dbUrl conf-}
+          {-let uniqposts = groupIPPairsUniq posts-}
+          {-putStrLn $ emitData uniqvisits uniqposts-}
 {-main = readLogFile (logFile conf) >>= printAll-}
 
 run pipe = access pipe ReadStaleOk (dbName conf)
+
+fetchPosts :: Host -> IO [IPPair] -- -> IO [(DateTime, [String])]
+fetchPosts dbUrl = do pipe <- connect dbUrl
+                      e <- run pipe postsWithIp
+                      close pipe
+                      let pairs = pairIps e
+                      return pairs
+                      {-return $ groupIPPairsUniq pairs-}
 
 fetchStatsAndRun action = do pipe <- connect (host $ dbUrl conf)
                              e <- run pipe postsWithIp
                              close pipe
                              let pairs = pairIps e
-                             let visits = groupVisitsUniq pairs
+                             let visits = groupIPPairsUniq pairs
                              action visits
 
 -- FIXME: this ought to stay in Fetch, but compiler cannot resolve ambiguity

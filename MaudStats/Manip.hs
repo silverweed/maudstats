@@ -1,7 +1,8 @@
 module MaudStats.Manip
-( IPPair
-, groupVisits
-, groupVisitsUniq
+( GroupedIPs
+, IPPair
+, groupIPPairs
+, groupIPPairsUniq
 , unix2date
 ) where
 
@@ -11,18 +12,19 @@ import Data.List     (groupBy, nub)
 import qualified Data.MultiMap as MultiMap
 
 type IPPair = (DateTime, String)
+type GroupedIPs = [(DateTime, [String])]
 
 {-|
- - groupVisits takes the list of pairs (unixtime, ip) and returns a list of pair [(datetime, [ip])].
+ - groupIPPairs takes the list of pairs (datetime, ip) and returns a list of pair [(datetime, [ip])].
  -}
-groupVisits :: [IPPair] -> [(DateTime, [String])]
-groupVisits = MultiMap.assocs . MultiMap.fromList
+groupIPPairs :: [IPPair] -> GroupedIPs
+groupIPPairs = MultiMap.assocs . MultiMap.fromList -- FIXME: restrict granularity to DAYS, not seconds
 
 {-|
- - groupVisitsUniq is like groupVisits, but uniques ips
+ - groupIPPairsUniq is like groupIPPairs, but uniques ips
  -}
-groupVisitsUniq :: [IPPair] -> [(DateTime, [String])]
-groupVisitsUniq = map (\(f, s) -> (f, nub s)) . groupVisits
+groupIPPairsUniq :: [IPPair] -> GroupedIPs
+groupIPPairsUniq = map (\(f, s) -> (f, nub s)) . groupIPPairs
 
 unix2date :: Int64 -> DateTime
 unix2date = fromSeconds . fromIntegral

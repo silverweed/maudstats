@@ -1,13 +1,14 @@
 module MaudStats.Display
-( printAll
+( emitData
+, printAll
 , printNum
 ) where
 
-import Data.DateTime      (DateTime, formatDateTime, fromSeconds, toGregorian')
+import Data.DateTime      (DateTime, formatDateTime, fromGregorian', fromSeconds, toGregorian')
 import Data.List          (intercalate)
-import Data.Time.Calendar (Day, addDays, diffDays)
+import Data.Time.Calendar (Day, addDays, diffDays, fromGregorian, toGregorian)
 import Data.UnixTime      (diffUnixTime, fromEpochTime, secondsToUnixDiffTime, udtSeconds)
-import MaudStats.Manip    (IPPair)
+import MaudStats.Manip    (GroupedIPs)
 
 sep = "|"
 
@@ -39,25 +40,31 @@ readableDate = formatDateTime "%d %h %Y"
 {-|
  - emitData takes 2 lists of ip pairs and structures them into JSON data.
  -}
-emitData :: [IPPair] -- The list of unique visiting ips
-         -> [IPPair] -- The list of posting ips
-         -> String   -- The resulting JSON
+emitData :: GroupedIPs -- The list of unique visiting ips (grouped by day)
+         -> GroupedIPs -- The list of posting ips (grouped by day)
+         -> String     -- The resulting JSON
 emitData visiting posting =
         intercalate "\n"
         [ "'use strict'"
         , "var ext = {"
-        , "    var labels = ["
-        , generateLabels visiting
-        , "    ];"
+        , "    labels: ["
+        , "        " ++ generateLabels visiting
+        , "    ],"
+        , "    visits: " ++ show visiting --(show $ map (length . snd) visiting)
+        , "    ,"
         , "};"
         ]
         where
         -- Generate all days from first to last
-        generateLabels :: [IPPair] -> String
-        generateLabels pairs = intercalate "" $ map readableDate . toDateTime $ start : [addDays i start | i <- [1..diff]]
+        generateLabels :: GroupedIPs -> String
+        generateLabels pairs = intercalate ","
+                                       $ map (show . readableDate . day2datetime)
+                                       $ start : [addDays i start | i <- [1..diff]]
                                where
-                               -- FIXME: do the correct datetime conversions
+                               -- FIXME: use Data.DateTime.addSeconds instead of Calendar.addDays
                                datetime2day :: DateTime -> Day
-                               datetime2day = fromGregorian $ (!! 2) $ toGregorian'
+                               datetime2day dt = let (y, m, d) = toGregorian' dt in fromGregorian y m d
+                               day2datetime :: Day -> DateTime
+                               day2datetime day = let (y, m, d) = toGregorian day in fromGregorian' y m d
                                start = datetime2day $ fst $ head pairs
                                diff  = diffDays (datetime2day $ fst $ last pairs) start
