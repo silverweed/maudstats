@@ -16,17 +16,17 @@
     </head>
     <body>
         <h2 class='header'>Stats for crunchy.rocks</h2>
-        <canvas id="uniqueVisitsPerDayLatest" width=500 height=100>
+        <canvas id="partialChart" width=500 height=100>
             Your browser does not support HTML5.
         </canvas>
-        <canvas id="uniqueVisitsPerDayTotal" width=1200 height=300>
+        <canvas id="totalChart" width=1200 height=300>
             Your browser does not support HTML5.
         </canvas>
         <script src="data.js"></script>
         <script>
 (function () {
     'use strict';
-    var ctx = document.getElementById('uniqueVisitsPerDayTotal').getContext('2d');
+    var ctx = document.getElementById('totalChart').getContext('2d');
     var data = {
         labels: ext.labels,
         datasets: [
@@ -49,18 +49,44 @@
                 pointHoverBorderWidth: 2,
                 pointRadius: 1,
                 pointHitRadius: 10,
-                data: ext.data,
-            }
+                data: ext.visits,
+            },
+            {
+                label: "Total posts per day",
+                fill: false,
+                lineTension: 0.1,
+                backgroundColor: "rgba(175,92,92,0.4)",
+                borderColor: "rgba(175,92,92,1)",
+                borderCapStyle: 'butt',
+                borderDash: [],
+                borderDashOffset: 0.0,
+                borderJoinStyle: 'miter',
+                pointBorderColor: "rgba(175,92,92,1)",
+                pointBackgroundColor: "#fff",
+                pointBorderWidth: 1,
+                pointHoverRadius: 5,
+                pointHoverBackgroundColor: "rgba(175,92,92,1)",
+                pointHoverBorderColor: "rgba(220,220,220,1)",
+                pointHoverBorderWidth: 2,
+                pointRadius: 1,
+                pointHitRadius: 10,
+                data: ext.posts,
+            },
         ]
     };
     var partialData = {};
     partialData.labels = data.labels;
     partialData.datasets = JSON.parse(JSON.stringify(data.datasets));
-    partialData.datasets[0].data = partialData.datasets[0].data.slice(-30);
-    partialData.datasets[0].label = "Latest unique visits per day";
+    for (var i = 0; i < partialData.datasets.length; ++i) {
+        partialData.datasets[i].data = partialData.datasets[i].data.slice(-30);
+        partialData.datasets[i].label = "Latest" + partialData.datasets[i].label.substring(5);
+    }
     partialData.labels = partialData.labels.slice(-30);
 
-    var uniqueVisitsPerDayTotal = new Chart(ctx, {
+    var maxValTotal = Math.max.apply(null, ext.visits);
+    var maxValPartial = Math.max.apply(null, partialData.datasets[0].data);
+
+    var totalChart = new Chart(ctx, {
         type: 'line',
         data: data,
         options: {
@@ -68,16 +94,16 @@
                 yAxes: [{
                     ticks: {
                         beginAtZero: true,
-			min: 0,
-			stepSize: 1
+                        min: 0,
+                        stepSize: Math.floor(maxValTotal / 10)
                     }
                 }],
             }
         }
     });
 
-    ctx = document.getElementById('uniqueVisitsPerDayLatest').getContext('2d');
-    var uniqueVisitsPerDayLatest = new Chart(ctx, {
+    ctx = document.getElementById('partialChart').getContext('2d');
+    var partialChart = new Chart(ctx, {
         type: 'line',
         data: partialData,
         options: {
@@ -85,8 +111,8 @@
                 yAxes: [{
                     ticks: {
                         beginAtZero: true,
-			min: 0,
-			stepSize: 1
+                        min: 0,
+                        stepSize: Math.floor(maxValPartial / 10)
                     }
                 }]
             }
