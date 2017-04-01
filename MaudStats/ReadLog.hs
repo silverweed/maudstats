@@ -2,9 +2,9 @@ module MaudStats.ReadLog
 ( readLogFile
 ) where
 
-import System.IO       (Handle, IOMode(..), withFile, hGetLine, hClose, hIsEOF)
-import Data.DateTime   (DateTime, parseDateTime)
-import Data.List       (isInfixOf, words)
+import System.IO
+import Data.DateTime   (DateTime, fromGregorian')
+import Data.List       (break, elemIndex, isInfixOf, words)
 import MaudStats.Manip (IPPair)
 
 {-|
@@ -33,9 +33,16 @@ filterCR = isInfixOf "crunchy.rocks"
  - ipPairFrom takes a raw log line and returns a pair (date, ip)
  -}
 ipPairFrom :: String -> IPPair
-ipPairFrom line = let w = words line
-                      ip = head w
-                      date = tail $ w !! 3
-                  in case parseDateTime "%d/%h/%Y:%H:%M:%S" date of
-                      Just d  -> (d, ip)
-                      Nothing -> error $ "Wrong date format: " ++ date
+ipPairFrom line = let w      = words line
+                      ip     = head w
+                      date   = tail $ w !! 3
+                      -- This manual date parsing is faster than parseDateTime
+                      (a, _) = break (==':') date
+                      [sday, smonth, syear] = words $ map (\c -> if c == '/' then ' ' else c) a
+                      day    = read sday  :: Int
+                      year   = read syear :: Integer
+                      month  = case smonth `elemIndex` ["Jan","Feb","Mar","Apr","May","Jun"
+                                                       ,"Jul","Aug","Sep","Oct","Nov","Dec"]
+                               of Just i  -> i
+                                  Nothing -> error $ "Invalid month: " ++ smonth
+                  in (fromGregorian' year month day, ip)
