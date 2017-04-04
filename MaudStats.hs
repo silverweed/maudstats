@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, ExtendedDefaultRules #-}
+{-# LANGUAGE OverloadedStrings, ExtendedDefaultRules, BangPatterns #-}
 module Main where
 
 import Data.DateTime (toSeconds)
@@ -21,11 +21,7 @@ conf = Conf { dbUrl    = "localhost"
             }
 
 main :: IO ()
-main = do visits <- readLogFile $ logFile conf
-          posts  <- fetchPosts $ host $ dbUrl conf
-          let uniqvisits = groupIPPairsUniq visits
-          let uniqposts  = groupIPPairsUniq posts
-          putStrLn $ emitData uniqvisits uniqposts
+main = (fetchPosts $ host $ dbUrl conf) >>= \pairs -> printNum $ groupIPPairsUniq pairs
 
 run pipe = access pipe ReadStaleOk $ dbName conf
 

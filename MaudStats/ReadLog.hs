@@ -1,7 +1,9 @@
+{-# LANGUAGE BangPatterns #-}
 module MaudStats.ReadLog
 ( readLogFile
 ) where
 
+import Control.DeepSeq
 import System.IO
 import Data.DateTime   (DateTime, fromGregorian')
 import Data.List       (break, elemIndex, isInfixOf, words)
@@ -11,20 +13,28 @@ import MaudStats.Manip (IPPair)
  - readLogFile reads a given nginx log file and returns a list [(date, ip)]
  -}
 readLogFile :: String -> IO [IPPair]
-readLogFile fname = withFile fname ReadMode $ \handle -> aggregateLines handle []
+readLogFile fname = do handle <- openFile fname ReadMode
+                       hSetBuffering handle LineBuffering
+                       input  <- hGetContents handle
+                       return $ aggregateLines' $ lines input
+                       --withFile fname ReadMode $ \handle -> aggregateLines handle []
+
+aggregateLines' :: [String] -> [IPPair]
+aggregateLines' [] = []
+aggregateLines' (line:lns) = let !l = (ipPairFrom line) in l:aggregateLines' lns
 
 {-|
  - aggregateLines builds the list of ip pairs, filtering only interesting entries
  - (selected via `filterCR`)
  -}
 aggregateLines :: Handle -> [IPPair] -> IO [IPPair]
-aggregateLines handle list = do isEof <- hIsEOF handle
+aggregateLines handle list = hIsEOF handle >>= \isEof ->
                                 case isEof of
                                     True  -> return list
-                                    False -> do line <- hGetLine handle
-                                                case filterCR line of
-                                                    True  -> aggregateLines handle $ (ipPairFrom line):list
-                                                    False -> aggregateLines handle list
+                                    False -> hGetLine handle >>= \line ->
+                                        case filterCR line of
+                                            True  -> aggregateLines handle $ (ipPairFrom line):list
+                                            False -> aggregateLines handle list
 
 filterCR :: String -> Bool
 filterCR = isInfixOf "crunchy.rocks"

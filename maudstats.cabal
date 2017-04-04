@@ -23,6 +23,7 @@ executable maudstats
   build-depends:
         base,
         datetime,
+        deepseq,
         mongoDB,
         multimap,
         text,

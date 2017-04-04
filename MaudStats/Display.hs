@@ -1,5 +1,7 @@
 module MaudStats.Display
 ( emitData
+, generateData
+, generateLabels
 , printAll
 , printNum
 ) where
@@ -34,7 +36,7 @@ printNum ((date, p):pairs) = do
                              printNum pairs
 
 readableDate :: DateTime -> String
-readableDate = formatDateTime "%d %h %Y"
+readableDate = formatDateTime "%d/%h/%Y"
 
 {-|
  - emitData takes 2 lists of ip pairs and structures them into JSON data.
@@ -47,18 +49,19 @@ emitData visiting posting =
         [ "'use strict'"
         , "var ext = {"
         , "    labels: ["
-        , "        " ++ generateLabels visiting
+        , "        " ++ (intercalate "," $ generateLabels visiting)
         , "    ],"
-        , "    visits: " ++ (show $ map (length . snd) $ fillMissing visiting) ++ ","
-        , "    posts: " ++ (show $ map (length . snd) $ fillMissing posting)
+        , "    visits: " ++ (show $ generateData visiting) ++ ","
+        , "    posts: " ++ (show $ generateData posting)
         , "};"
         ]
-        where
-        -- Generate all days from first to last
-        generateLabels :: GroupedIPs -> String
-        generateLabels pairs = intercalate ","
-                                       $ map (show . readableDate)
-                                       $ allDaysBetween start end
-                               where
-                               start = fst $ head pairs
-                               end   = fst $ last pairs
+
+-- Generate all days from first to last
+generateLabels :: GroupedIPs -> [String]
+generateLabels pairs = map (show . readableDate) $ allDaysBetween start end
+                       where
+                       start = fst $ head pairs
+                       end   = fst $ last pairs
+
+generateData :: GroupedIPs -> [Int]
+generateData = map (length . snd) . fillMissing
