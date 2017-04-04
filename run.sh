@@ -31,24 +31,28 @@ function visiting {
 		n++
 		ips[$2] = 1
 	}
+}
+END {
+	printf "%s|%d\n", cur, n
 }'
 
 }
 
 #paste -d'|' <(visiting) <(cabal run) | awk -v'FS=|' '
 #NR > 2 {
-	#labels[i] = $1
-	#visits[$1] = $2
-	#if (NF > 2)
-		#posts[$3] = $4
-	#++i
+#       labels[i] = $1
+#       visits[$1] = $2
+#       if (NF > 2)
+#       	posts[$3] = $4
+#       ++i
 #}
 #END {
-	#for (j = 0; j < i; ++j) {
-		#printf "%s: %d | %d\n", labels[j], visits[labels[j]], posts[labels[j]] 
-	#}
+#       for (j = 0; j < i; ++j) {
+#       	printf "%s: %d | %d\n", labels[j], visits[labels[j]], posts[labels[j]] 
+#       }
 #}'
 
+# TODO: output ALL labels, even when there are 0 visits on a certain day
 paste -d'|' <(visiting) <(cabal run) | awk -v'FS=|' > $ROOT/frontend/data.js '
 # Data format is visitDate/visits/postDate/posts
 NR > 2 {
@@ -67,7 +71,7 @@ END {
 	printf "\""labels[i]"\"],\r\n\tvisits: ["
 	for (j = 1; j <= i - 1; ++j)
 		printf visits[labels[j]]", "
-	printf visits[labels[i - 1]]"],\r\nposts: ["
+	printf visits[labels[i]]"],\r\nposts: ["
 	
 	for (j = 1; j <= i - 1; ++j) {
 		if (labels[j] in posts)
