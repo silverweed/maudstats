@@ -14,24 +14,23 @@ EXE="$ROOT/dist/build/maudstats/maudstats"
 		exit 3
 	}
 }
-# Get visiting IPs (TODO uniq)
+# Get visiting IPs
 function visiting {
 	awk '/crunchy\.rocks/{printf "%.12s|%s\n",$4,$1}' nginx-access.log |
 	cut -f2 -d[ 	|
-	uniq -c 	|
-	cut -f1 -d\| 	|
-	awk '
+	awk -v'FS=|' '
+# Count duplicate IPs only once within the same day
 {
-	if($2 != cur)
-		i++
-	d[i] = $2
-	n[i] += $1
-	cur = $2
-}
-
-END {
-	for(j = 1; j <= i; ++j)
-		printf "%s|%d\n", d[j], n[j]
+	if (cur != $1) {
+		printf "%s|%d\n", cur, n
+		n = 0
+		delete ips
+	}
+	cur = $1
+	if (!($2 in ips)) {
+		n++
+		ips[$2] = 1
+	}
 }'
 
 }
