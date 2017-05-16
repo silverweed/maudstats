@@ -16,7 +16,8 @@ EXE="$ROOT/dist/build/maudstats/maudstats"
 }
 # Get visiting IPs
 function visiting {
-	awk '/crunchy\.rocks/{printf "%.12s|%s\n",$4,$1}' nginx-access.log |
+	grep -vf crawlers.txt nginx-access.log |
+	awk '/crunchy\.rocks/{printf "%.12s|%s\n",$4,$1}' |
 	cut -f2 -d[ 	|
 	awk -v'FS=|' '
 # Count duplicate IPs only once within the same day
@@ -37,20 +38,6 @@ END {
 }'
 
 }
-
-#paste -d'|' <(visiting) <(cabal run) | awk -v'FS=|' '
-#NR > 2 {
-#       labels[i] = $1
-#       visits[$1] = $2
-#       if (NF > 2)
-#       	posts[$3] = $4
-#       ++i
-#}
-#END {
-#       for (j = 0; j < i; ++j) {
-#       	printf "%s: %d | %d\n", labels[j], visits[labels[j]], posts[labels[j]] 
-#       }
-#}'
 
 # TODO: output ALL labels, even when there are 0 visits on a certain day
 paste -d'|' <(visiting) <(cabal run) | awk -v'FS=|' > $ROOT/frontend/data.js '
