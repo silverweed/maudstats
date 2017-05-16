@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
 ROOT="$(readlink -f $(dirname $0))"
+NGINX_LOG="$ROOT/nginx-access.log"
 EXE="$ROOT/dist/build/maudstats/maudstats"
+
+pushd $ROOT
 
 [[ -x $(which cabal 2>/dev/null) ]] || {
 	>&2 echo "[ FATAL ] Missing cabal executable!"
@@ -16,8 +19,9 @@ EXE="$ROOT/dist/build/maudstats/maudstats"
 }
 # Get visiting IPs
 function visiting {
-	grep -vf crawlers.txt nginx-access.log |
-	awk '/crunchy\.rocks/{printf "%.12s|%s\n",$4,$1}' |
+	grep -vf crawlers.txt $NGINX_LOG |
+	grep -Ev '/(robots.txt|static/)' |
+	awk '/\/\/(little\.)?crunchy\.rocks/{printf "%.12s|%s\n",$4,$1}' |
 	cut -f2 -d[ 	|
 	awk -v'FS=|' '
 # Count duplicate IPs only once within the same day
@@ -72,3 +76,5 @@ END {
 		printf "0"
 	printf "]\r\n};"
 }'
+
+popd
