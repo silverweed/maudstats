@@ -62,7 +62,7 @@ END {
 	printf "\""labels[i]"\"],\r\n\tvisits: ["
 	for (j = 1; j <= i - 1; ++j)
 		printf visits[labels[j]]", "
-	printf visits[labels[i]]"],\r\nposts: ["
+	printf visits[labels[i]]"],\r\n\tposts: ["
 	
 	for (j = 1; j <= i - 1; ++j) {
 		if (labels[j] in posts)
