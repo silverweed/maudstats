@@ -5,9 +5,11 @@
         <title>/cr/ stats</title>
         <script src="Chart.min.js"></script>
         <style>
+	html {
+            font-family: "Arial", sans-serif;
+	}
         .header {
             text-align: center;
-            font-family: "Arial", sans-serif;
         }
         .footer {
             text-align: right;
@@ -123,6 +125,34 @@
         <noscript>
             Please enable Javascript to view this page.
         </noscript>
+	<h3>Moar stats</h3>
+	<ul>
+		<li><strong>Avg Visits Per Day:</strong> <span id='avg_visits_per_day'></span></li>
+		<li><strong>Avg Posts Per Day:</strong> <span id='avg_posts_per_day'></span></li>
+	</ul>
         <p class='footer'><a target='_blank' href='https://github.com/silverweed/maudstats'>GitHub</a></p>
+	<script>
+		document.querySelector('#avg_visits_per_day').innerText = (() => {
+			var firstDay = new Date(ext.labels[0]);
+			var today = new Date();
+			var diffInDays = Math.floor((today - firstDay) / 86400 / 1000);
+			if (diffInDays === 0)
+				return '???';
+			var tot = ext.visits.reduce((acc, val) => acc + val, 0);
+			return Math.floor(100 * tot / diffInDays) * 0.01;
+		})();
+		document.querySelector('#avg_posts_per_day').innerText = (() => {
+			var firstPostDay = new Date(2015, 5, 20); // 20 Jun 2015
+			var today = new Date();
+			var diffInDays = Math.floor((today - firstPostDay) / 86400 / 1000);
+			if (diffInDays === 0)
+				return '???';
+			var idx = ext.labels.indexOf('20/Jun/2015');
+			if (idx < 0)
+				return '???';
+			var tot = ext.posts.slice(idx).reduce((acc, val) => acc + val, 0);
+			return Math.floor(100 * tot / diffInDays) * 0.01;
+		})();
+	</script>
     </body>
 </html>
