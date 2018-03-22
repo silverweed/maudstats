@@ -19,7 +19,7 @@ pushd $ROOT
 }
 # Get visiting IPs
 function visiting {
-	grep -vf crawlers.txt $NGINX_LOG |
+	grep -vif crawlers.txt $NGINX_LOG |
 	grep -Ev '/(robots.txt|static/)' |
 	awk '/\/\/(little\.)?crunchy\.rocks/{printf "%.12s|%s\n",$4,$1}' |
 	cut -f2 -d[ 	|
